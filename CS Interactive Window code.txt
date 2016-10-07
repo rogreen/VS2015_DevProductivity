@@ -1,0 +1,27 @@
+using System.IO;
+using System.Net;
+
+var url = "http://ichart.finance.yahoo.com/table.csv?s=MSFT&d=10&e=10&f=2015&g=d&a=2&b=13&c=1986&ignore=.csv";
+
+Console.Write("url: " + url)
+
+var request = WebRequest.Create(url);
+var response = request.GetResponse();
+var dataStream = response.GetResponseStream();
+var reader = new StreamReader(dataStream);
+var csv = await reader.ReadToEndAsync();
+reader.Close();
+dataStream.Close();
+response.Close();
+
+csv.Length
+csv.Split('\n').Length
+Console.Write(csv.Substring(0,200))
+
+var prices = csv.Split('\n').Skip(1)
+                .Select(line => line.Split(','))
+                .Where(values => values.Length == 7)
+                .Select(values => new { date = DateTime.Parse(values[0]), 
+                                        price = float.Parse(values[6]) });
+
+prices.Where(s=>s.price > 50).Count()
